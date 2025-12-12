@@ -1557,7 +1557,14 @@ classdef CONSTRUCTION
         
         function [d lambda rho cp tau D_tot R_tot U_tot C_tot TAU_tot] = wall_node_optim_(obj ,d_0, lambda_0, rho_0, cp_0, N_layer, d_active, Rsi, Rse, debug)
             name = '';
-            
+
+            pos0 = find(d_0 == 0);
+            d_0(pos0) = [];
+            lambda_0(pos0) = [];
+            rho_0(pos0) = [];
+            cp_0(pos0) = [];
+            N_layer(pos0) = [];
+
             d_o = d_0;
             lambda_o = lambda_0;
             rho_o = rho_0;
@@ -1567,12 +1574,17 @@ classdef CONSTRUCTION
             lambda_1 = lambda_0;
             rho_1 = rho_0;
             cp_1 = cp_0;
+            % 
+            % display(d_0)
 
             jj = 1;
             while jj <= length(d_0)
+                % jj
+                % d_0
                 if jj <= length(d_1)
         %             disp([num2str(jj) ': ' num2str(N_layer(jj))])
         %             pause
+        
                     if N_layer(jj) == 0 && jj > 1 && jj < length(d_0)
                         d_1(jj-1) = d_0(jj-1)+d_0(jj)/2;
                         d_1(jj+1) = d_0(jj+1)+d_0(jj)/2;
