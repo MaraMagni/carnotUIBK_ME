@@ -169,6 +169,8 @@ classdef BUILDING
                         mod = '1-node';
                     elseif obj.thermalzone(ii).zone(1,list_zones(ll)).model == 3
                         mod = '2-node';
+                    elseif obj.thermalzone(ii).zone(1,list_zones(ll)).model == 4
+                        mod = '1-node without mass balance';
                     end
                 disp([obj.thermalzone(ii).zone(1,list_zones(ll)).name ': ' name_rooms ' , MODEL:' mod ', HEATED AREA: '  num2str(obj.thermalzone(ii).zone(1,list_zones(ll)).heated_area) ' m²'])
                 end

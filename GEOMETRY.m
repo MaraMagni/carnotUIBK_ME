@@ -493,6 +493,7 @@ classdef GEOMETRY
             % 4 ... flag to create excel file (optional)
 			
 			% bugfixing ongoing
+            % excel_create= 'structure';
             
             if nargin < 3
                 error('number of input not correct (at least 2)')
@@ -597,7 +598,7 @@ classdef GEOMETRY
                     for jk=1:length(name_XML.Campus.Building.Space)
                         walls_list = [];
                         
-                        name_XML.Campus.Building.Space
+                        name_XML.Campus.Building.Space;
                         
                         if length(name_XML.Campus.Building.Space) == 1
                             Space = name_XML.Campus.Building.Space;
@@ -992,6 +993,7 @@ classdef GEOMETRY
                                                         if nargin == 5
                                                             check = 0;
                                                             for ii = 1:size(raw_windoors_excel,1)
+                                                                try %%%% Mara 21 07 2025
                                                                 if strcmp(raw_windoors_excel{ii,53},name_wi)
                                                                     check = 1;
                                                                     model_cons_wi = raw_windoors_excel{ii,10};
@@ -1053,6 +1055,7 @@ classdef GEOMETRY
                                                                     xlRange = ['A' num2str(ii+3) ':BA' num2str(ii+3)];
                                                                     xlswrite1(name_xls,vector_window,'WinDoors',xlRange)
                                                                     break
+                                                                end
                                                                 end
                                                             end
                                                         end
@@ -1985,9 +1988,9 @@ classdef GEOMETRY
             if ind
                 room = obj.room(ind);
             else
-%                 error(['room ' name ' not existing!'])
+                error(['room ' name{:} ' not existing!'])
                 name
-                error(['room not existing!'])
+                % error(['room not existing!' eval(name)])
             end
         end
         
