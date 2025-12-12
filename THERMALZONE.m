@@ -393,13 +393,12 @@ classdef THERMALZONE
                     %         obj.zone(ind).n50 = room_.n50;
                     %     end
                     % end
-
                    volume(tt) = geometry.get_room(obj.zone(ind).rooms(tt)).height * geometry.get_room(obj.zone(ind).rooms(tt)).area;
                    n50(tt) =   geometry.get_room(obj.zone(ind).rooms(tt)).n50;
 
                 end
                 if exist('volume')
-					obj.zone(ind).n50 = (volume(tt)*n50(tt))/sum(volume(tt));
+					obj.zone(ind).n50 = sum(volume.*n50)/sum(volume);
                 else
 					obj.zone(ind).n50 = 0;
                 end
@@ -531,7 +530,7 @@ classdef THERMALZONE
                             if ((strcmp(obj.zone(ind).matrix_wd{oo,1}, obj.zone(ind).matrix_wd{pp,1})) && ...
                                 (obj.zone(ind).matrix_wd{oo,2} == obj.zone(ind).matrix_wd{pp,2}) && ...
                                 (obj.zone(ind).matrix_wd{oo,4} == obj.zone(ind).matrix_wd{pp,4}+180 || obj.zone(ind).matrix_wd{oo,4} == obj.zone(ind).matrix_wd{pp,4}-180 || obj.zone(ind).matrix_wd{oo,4} == obj.zone(ind).matrix_wd{pp,4}) && ...
-                                (obj.zone(ind).matrix_wd{oo,5} == obj.zone(ind).matrix_wd{pp,5}+180 || obj.zone(ind).matrix_wd{oo,5} == obj.zone(ind).matrix_wd{pp,5}-180 || obj.zone(ind).matrix_wd{oo,5} == obj.zone(ind).matrix_wd{pp,5}) && ...
+                                (floor(obj.zone(ind).matrix_wd{oo,5}*100)/100 == floor((obj.zone(ind).matrix_wd{pp,5}+180)*100)/100 || floor(obj.zone(ind).matrix_wd{oo,5}*100)/100 == floor((obj.zone(ind).matrix_wd{pp,5}-180)*100)/100 || floor(obj.zone(ind).matrix_wd{oo,5}*100)/100 == floor(obj.zone(ind).matrix_wd{pp,5}*100)/100) && ...
                                 (obj.zone(ind).matrix_wd{oo,6} == obj.zone(ind).matrix_wd{pp,6}) && ...
                                 (obj.zone(ind).matrix_wd{oo,7} == obj.zone(ind).matrix_wd{pp,7}) && ...
                                 (obj.zone(ind).matrix_wd{oo,8} == obj.zone(ind).matrix_wd{pp,8}) && ...
@@ -718,21 +717,25 @@ classdef THERMALZONE
                     for pp = 1:size(obj.zone(jj).matrix_wd,1)
                         if oo ~= pp && all(pp ~= ttt)
                             % compare obj.zone(jj).matrix
-                            if  ((strcmp(obj.zone(jj).matrix_wd{oo,1}, obj.zone(jj).matrix_wd{pp,1})) &&...
-                                (strcmp(obj.zone(jj).matrix_wd{oo,3},obj.zone(jj).matrix_wd{pp,3})) &&...
+                            if  ((strcmp(obj.zone(jj).matrix_wd{oo,1}, obj.zone(jj).matrix_wd{pp,1})) &&... % construction name
+                                (strcmp(obj.zone(jj).matrix_wd{oo,3},obj.zone(jj).matrix_wd{pp,3})) &&... % boundary
                                 obj.zone(jj).matrix_wd{oo,6} == obj.zone(jj).matrix_wd{pp,6}...
                                 && obj.zone(jj).matrix_wd{oo,7} == obj.zone(jj).matrix_wd{pp,7} &&...
                                 obj.zone(jj).matrix_wd{oo,8} == obj.zone(jj).matrix_wd{pp,8} &&...
                                 obj.zone(jj).matrix_wd{oo,13} == obj.zone(jj).matrix_wd{pp,13} &&...
                                 obj.zone(jj).matrix_wd{oo,9} == obj.zone(jj).matrix_wd{pp,9})
-                                if ( (obj.zone(jj).matrix_wd{oo,4} == obj.zone(jj).matrix_wd{pp,4}) && ((obj.zone(jj).matrix_wd{oo,5} == obj.zone(jj).matrix_wd{pp,5})) )
+                                if ( (obj.zone(jj).matrix_wd{oo,4} == obj.zone(jj).matrix_wd{pp,4}) && ((obj.zone(jj).matrix_wd{oo,5} == obj.zone(jj).matrix_wd{pp,5})) ) | strcmp(obj.zone(jj).matrix_wd{oo,3},'INTERNAL')
                                     obj.zone(jj).matrix_wd{oo,2} = obj.zone(jj).matrix_wd{oo,2}+obj.zone(jj).matrix_wd{pp,2};
                                     canc(uu) = pp;
                                     uu = uu+1;
-                                elseif  ~strcmp(obj.zone(jj).matrix_wd{oo,3},'AMBIENT')
+                                elseif  ~strcmp(obj.zone(jj).matrix_wd{oo,3},'AMBIENT') & (((obj.zone(jj).matrix_wd{oo,4} == obj.zone(jj).matrix_wd{pp,4}) & obj.zone(jj).matrix_wd{oo,4} == 90) | (obj.zone(jj).matrix_wd{oo,4} ~= 90 & obj.zone(jj).matrix_wd{pp,4} ~= 90))
                                     obj.zone(jj).matrix_wd{oo,2} = obj.zone(jj).matrix_wd{oo,2}+obj.zone(jj).matrix_wd{pp,2};
                                     canc(uu) = pp;
                                     uu = uu+1;
+                                % elseif  strcmp(obj.zone(jj).matrix_wd{oo,3},'INTERNAL')
+                                %     obj.zone(jj).matrix_wd{oo,2} = obj.zone(jj).matrix_wd{oo,2}+obj.zone(jj).matrix_wd{pp,2};
+                                %     canc(uu) = pp;
+                                %     uu = uu+1;                                
                                 end
                             end
                         end
@@ -876,7 +879,8 @@ classdef THERMALZONE
                                     % if the characteristics of the walls
                                     % are the same, then it puts the wall
                                     % in the intersection
-                                    if (strcmp(obj.zone(ind_z(ll)).matrix_wd{nn,1}, obj.zone(ind_z(mm)).matrix_wd{oo,1}) && (round(obj.zone(ind_z(ll)).matrix_wd{nn,2},2)==round(obj.zone(ind_z(mm)).matrix_wd{oo,2},2)) && ((obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}+180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}-180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}) ) && (obj.zone(ind_z(ll)).matrix_wd{nn,6} == obj.zone(ind_z(mm)).matrix_wd{oo,6}) && (obj.zone(ind_z(ll)).matrix_wd{nn,7} == obj.zone(ind_z(mm)).matrix_wd{oo,7}) && (obj.zone(ind_z(ll)).matrix_wd{nn,8} == obj.zone(ind_z(mm)).matrix_wd{oo,8}) && (obj.zone(ind_z(ll)).matrix_wd{nn,9} == obj.zone(ind_z(mm)).matrix_wd{oo,9}) && (obj.zone(ind_z(ll)).matrix_wd{nn,13} == obj.zone(ind_z(mm)).matrix_wd{oo,13}) )
+                                    % if (strcmp(obj.zone(ind_z(ll)).matrix_wd{nn,1}, obj.zone(ind_z(mm)).matrix_wd{oo,1}) && (round(obj.zone(ind_z(ll)).matrix_wd{nn,2},2)==round(obj.zone(ind_z(mm)).matrix_wd{oo,2},2)) && ((obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}+180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}-180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}) ) && (obj.zone(ind_z(ll)).matrix_wd{nn,6} == obj.zone(ind_z(mm)).matrix_wd{oo,6}) && (obj.zone(ind_z(ll)).matrix_wd{nn,7} == obj.zone(ind_z(mm)).matrix_wd{oo,7}) && (obj.zone(ind_z(ll)).matrix_wd{nn,8} == obj.zone(ind_z(mm)).matrix_wd{oo,8}) && (obj.zone(ind_z(ll)).matrix_wd{nn,9} == obj.zone(ind_z(mm)).matrix_wd{oo,9}) && (obj.zone(ind_z(ll)).matrix_wd{nn,13} == obj.zone(ind_z(mm)).matrix_wd{oo,13}) )
+                                    if (strcmp(obj.zone(ind_z(ll)).matrix_wd{nn,1}, obj.zone(ind_z(mm)).matrix_wd{oo,1}) && (floor(obj.zone(ind_z(ll)).matrix_wd{nn,2}*100)/100)==(floor(obj.zone(ind_z(mm)).matrix_wd{oo,2}*100)/100) && ((obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}+180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}-180) || (obj.zone(ind_z(ll)).matrix_wd{nn,4} == obj.zone(ind_z(mm)).matrix_wd{oo,4}) ) && (obj.zone(ind_z(ll)).matrix_wd{nn,6} == obj.zone(ind_z(mm)).matrix_wd{oo,6}) && (obj.zone(ind_z(ll)).matrix_wd{nn,7} == obj.zone(ind_z(mm)).matrix_wd{oo,7}) && (obj.zone(ind_z(ll)).matrix_wd{nn,8} == obj.zone(ind_z(mm)).matrix_wd{oo,8}) && (obj.zone(ind_z(ll)).matrix_wd{nn,9} == obj.zone(ind_z(mm)).matrix_wd{oo,9}) && (obj.zone(ind_z(ll)).matrix_wd{nn,13} == obj.zone(ind_z(mm)).matrix_wd{oo,13}) ) %MM 23 07 2025 bug with similar numbers and round function leading to different areas
                                         if (strcmp(obj.zone(ind_z(ll)).matrix_wd{nn,3}, obj.zone(ind_z(mm)).name) && strcmp(obj.zone(ind_z(mm)).matrix_wd{oo,3}, obj.zone(ind_z(ll)).name))
                                             obj.intersection{ind(1),ind(2)}.matrix_wd{ind_sum,1} = obj.zone(ind_z(ll)).matrix_wd{nn,1};
                                             obj.intersection{ind(1),ind(2)}.matrix_wd{ind_sum,2} = obj.zone(ind_z(ll)).matrix_wd{nn,2};
@@ -955,17 +959,17 @@ classdef THERMALZONE
             % check if zone is not existing
             if ind
                 area = 0;
-                height = 0;
+                vol = 0;
                 num = 0;
                 for kk = 1:length(obj.zone(ind).rooms)
                     room(kk) = geometry.get_room(obj.zone(ind).rooms(kk));
                     area = area + room(kk).area;
                     num = num+1;
-                    height = (height + room(kk).height);
+                    vol = (vol + room(kk).height*room(kk).area);
                 end
-                height = height/num;
+                % height = height/num;
                 obj.zone(ind).heated_area = area;
-                obj.zone(ind).heated_volume = height*area;
+                obj.zone(ind).heated_volume = vol;
             else
                 error(['zone number ' number ' is not existing!'])
             end
