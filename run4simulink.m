@@ -201,7 +201,7 @@ for jj = 1:size(conditions_zone,1)         % intersection 1
                 conditions_intersection_wall(jkk,3,jj,jk) = 0;  % horizontal
             end
             % air exchange
-            conditions_intersection_wall(jkk,4,jj,jk) = building.get_building().thermalzone.intersection{jj,jk}.matrix_wd{jkk,13};  % model of infiltration
+            % conditions_intersection_wall(jkk,4,jj,jk) = building.get_building().thermalzone.intersection{jj,jk}.matrix_wd{jkk,13};  % model of infiltration
         end
     end
 end
